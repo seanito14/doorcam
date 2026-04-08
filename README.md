@@ -271,12 +271,26 @@ logcat.
 
 ## Roadmap
 
+### Shipped
+
 - [x] **M1** Camera2 with `screen-off` proven (TextureView + ImageReader + encoder input Surface on a single session)
 - [x] **M2** MotionDetector + ring-buffer recording + MediaMuxer + Gallery scan
 - [x] **M2.5** UI polish: aspect-correct letterbox, landscape support, ROT/FLIP/REC on-screen buttons, config persistence, status overlay
+- [x] **Host integration** macOS Dock launcher app bundle (`~/Applications/DoorCam.app`) that one-click starts scrcpy with `--turn-screen-off --stay-awake`, auto-handles wireless/USB fallback, and is idempotent against duplicate windows
+
+### Near-term
+
 - [ ] **M3** ntfy.sh push notification on motion, Mac `launchd` agent → `osascript display notification`
-- [ ] **M4** `BOOT_COMPLETED` receiver + setup-emui.sh + 24 h soak test
-- [ ] **M5** ML person/vehicle filter (MLKit), live HTTP preview, `adb shell am broadcast` control surface, ffmpeg post-flip helper
+- [ ] **M4** `BOOT_COMPLETED` receiver + `setup-emui.sh` (disable PowerGenie, deviceidle whitelist, stay-on-while-plugged) + 24 h soak test
+- [ ] **M5** ML person/vehicle filter (MLKit object detection) to suppress trivial motion, live HTTP preview served from the foreground service, `adb shell am broadcast` control surface, ffmpeg post-flip helper
+
+### Future
+
+- [ ] **Manual camera control** — on-screen sliders / config knobs for exposure compensation, ISO, white balance, manual focus distance, AE/AF lock. Surfaces Camera2 `CaptureRequest` knobs (`SENSOR_SENSITIVITY`, `SENSOR_EXPOSURE_TIME`, `CONTROL_AWB_MODE`, `LENS_FOCUS_DISTANCE`) via the same persistent-config pattern as the existing rotation/zoom knobs. Useful for tuning the fish-eye view to specific lighting (porch light at night, bright daylight, backlit doorway).
+- [ ] **Video resolution selector** — runtime-selectable capture size from the Camera2 supported-sizes list (`SCALER_STREAM_CONFIGURATION_MAP.getOutputSizes`). Trade off detail vs storage vs battery: 1280×720 for daily use, 1920×1080 for evidence-grade, 640×480 for long overnight soaks. Persists to SharedPreferences like every other setting.
+- [ ] **AI face recognition** — on-device face detection (MLKit Face Detection) to identify known visitors and optionally whitelist them from triggering alerts ("don't notify me when Sean comes home"). Uses the existing ImageReader YUV stream so it shares the camera pipeline with motion detection — no extra camera session needed. Privacy: all inference runs on-device, no face data ever leaves the phone.
+- [ ] **Two-way doorbell audio** — the Honor 20 Lite has working speakers and a mic; Android 11+ would let us stream audio via scrcpy's audio mirroring, but this phone is on Android 10 where scrcpy's audio is unsupported. A custom WebRTC or SIP path is a possible workaround.
+- [ ] **Web dashboard** — browser UI served by the foreground service (NanoHTTPD) with live MJPEG preview, recent clips gallery, per-day motion heatmap, and remote config (rotation/zoom/threshold) — would make scrcpy optional.
 
 ## Credits
 
