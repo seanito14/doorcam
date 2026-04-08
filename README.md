@@ -293,7 +293,7 @@ logcat.
 
 ## License
 
-[MIT](./LICENSE) — © 2026 [seanito14](https://github.com/seanito14)
+[MIT](./LICENSE) — © 2026 Sean Ito ([@seanito14](https://github.com/seanito14))
 
 [scrcpy]: https://github.com/Genymobile/scrcpy
 [genymobile]: https://github.com/Genymobile
