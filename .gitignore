@@ -1,0 +1,39 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Android / SDK
+/local.properties
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# APKs & signing
+*.apk
+*.aab
+*.ap_
+*.jks
+*.keystore
+*.p12
+*.p8
+*.mobileprovision
+app/release/
+app/debug/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+*.log
+*.tmp
+*.swp
+/tmp/
+
+# Secrets (ntfy topic, Telegram tokens, etc.)
+ntfy.conf
+secrets.env
+.env

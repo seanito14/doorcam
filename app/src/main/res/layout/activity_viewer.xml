@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- Aspect-correct TextureView: initial size is match_parent but code
+         resizes it to the letterbox-fitted rectangle after layout.
+         IMPORTANT: no android:background on TextureView — it's incompatible
+         with its hardware layer rendering path (causes inflate crash). The
+         parent FrameLayout's black background handles the letterbox bars. -->
+    <TextureView
+        android:id="@+id/preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"/>
+
+    <TextView
+        android:id="@+id/status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:padding="10dp"
+        android:background="#66000000"
+        android:textColor="#FFEEEEEE"
+        android:textSize="13sp"
+        android:fontFamily="monospace"
+        android:singleLine="true"
+        android:text="DoorCam"/>
+
+    <!-- Button column on the right side of the landscape view, positioned
+         over the letterbox bar so it doesn't cover the fish-eye circle.
+         Stack (top to bottom): ROT, FLIP, REC. -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:orientation="vertical"
+        android:gravity="end">
+
+        <TextView
+            android:id="@+id/rotBtn"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_marginBottom="6dp"
+            android:background="#CC222222"
+            android:gravity="center"
+            android:text="↻ 0°"
+            android:textColor="#FFFFFFFF"
+            android:textSize="14sp"
+            android:clickable="true"
+            android:focusable="true"/>
+
+        <TextView
+            android:id="@+id/flipBtn"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_marginBottom="6dp"
+            android:background="#CC222222"
+            android:gravity="center"
+            android:text="↕ FLIP"
+            android:textColor="#FFFFFFFF"
+            android:textSize="14sp"
+            android:clickable="true"
+            android:focusable="true"/>
+
+        <TextView
+            android:id="@+id/recBtn"
+            android:layout_width="100dp"
+            android:layout_height="48dp"
+            android:background="#CC222222"
+            android:gravity="center"
+            android:text="● REC"
+            android:textColor="#FFFFFFFF"
+            android:textSize="16sp"
+            android:clickable="true"
+            android:focusable="true"/>
+    </LinearLayout>
+</FrameLayout>
