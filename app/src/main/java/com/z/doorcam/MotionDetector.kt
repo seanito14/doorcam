@@ -16,8 +16,8 @@ import android.util.Log
 class MotionDetector(
     private val gridW: Int = 80,
     private val gridH: Int = 60,
-    initialThreshold: Int = 18,            // 0–255 average abs diff per cell
-    private val confirmFrames: Int = 2,    // frames above threshold before firing start
+    initialThreshold: Int = 35,            // 0–255 average abs diff per cell
+    private val confirmFrames: Int = 5,    // frames above threshold before firing start
     private val listener: Listener
 ) {
     @Volatile var threshold: Int = initialThreshold
@@ -58,9 +58,9 @@ class MotionDetector(
             aboveCount = 0
             if (active) {
                 belowCount++
-                // Require a single quiet frame to emit end — the hold timer in
-                // RecordingController handles any additional grace period.
-                if (belowCount >= 1) {
+                // Require several quiet frames before declaring motion over —
+                // prevents rapid start/stop flicker from momentary dips.
+                if (belowCount >= 8) {
                     active = false
                     Log.i(TAG, "motion END  score=$score")
                     listener.onMotionEnd()
