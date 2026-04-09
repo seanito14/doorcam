@@ -93,6 +93,11 @@ class ViewerActivity : Activity(), MotionDetector.Listener, RecordingController.
     private lateinit var recBtn: TextView
     private lateinit var rotBtn: TextView
     private lateinit var flipBtn: TextView
+    private lateinit var camBtn: TextView
+
+    /** Back-facing camera IDs worth cycling through (excludes depth/IR sensors). */
+    private var cyclableCameraIds: List<String> = emptyList()
+    private var cycleCameraIndex: Int = 0
 
     private var cameraManager: CameraManager? = null
     private var cameraId: String? = null
@@ -151,11 +156,14 @@ class ViewerActivity : Activity(), MotionDetector.Listener, RecordingController.
         recBtn = findViewById(R.id.recBtn)
         rotBtn = findViewById(R.id.rotBtn)
         flipBtn = findViewById(R.id.flipBtn)
+        camBtn = findViewById(R.id.camBtn)
         recBtn.setOnClickListener { onRecBtn() }
         rotBtn.setOnClickListener { onRotBtn() }
         flipBtn.setOnClickListener { onFlipBtn() }
+        camBtn.setOnClickListener { onCamBtn() }
 
         cameraManager = getSystemService(CAMERA_SERVICE) as CameraManager
+        buildCyclableCameraList()
         loadConfig()
         motionDetector = MotionDetector(initialThreshold = cfgThreshold, listener = this)
         updateAdjustButtonLabels()
@@ -365,6 +373,24 @@ class ViewerActivity : Activity(), MotionDetector.Listener, RecordingController.
         return intent?.getStringExtra(EXTRA_CAMERA_ID) ?: prefs.getString(EXTRA_CAMERA_ID, null)
     }
 
+    /**
+     * Build list of back-facing cameras worth cycling through.
+     * Filters out depth/IR sensors (pixel array <= 2MP) and front cameras.
+     */
+    private fun buildCyclableCameraList() {
+        val cm = cameraManager ?: return
+        cyclableCameraIds = cm.cameraIdList.filter { id ->
+            val ch = cm.getCameraCharacteristics(id)
+            val facing = ch.get(CameraCharacteristics.LENS_FACING)
+            val pixelArray = ch.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE)
+            val megapixels = if (pixelArray != null) {
+                (pixelArray.width.toLong() * pixelArray.height) / 1_000_000.0
+            } else 0.0
+            facing == CameraCharacteristics.LENS_FACING_BACK && megapixels > 3.0
+        }
+        Log.i(TAG, "cyclable back cameras: $cyclableCameraIds")
+    }
+
     private fun pickBackCameraId(): String? {
         val cm = cameraManager ?: return null
 
@@ -398,6 +424,10 @@ class ViewerActivity : Activity(), MotionDetector.Listener, RecordingController.
                 ch.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK
             }
         } ?: return null
+
+        // Sync cycle index so the CAM button label is correct
+        val idx = cyclableCameraIds.indexOf(chosenId)
+        if (idx >= 0) cycleCameraIndex = idx
 
         val ch = cm.getCameraCharacteristics(chosenId)
         sensorOrientation = ch.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 90
@@ -739,8 +769,33 @@ class ViewerActivity : Activity(), MotionDetector.Listener, RecordingController.
         Log.i(TAG, "FLIP button → V=$cfgFlipV")
     }
 
+    /** Cycle to the next back camera, tear down the current session, and reopen. */
+    private fun onCamBtn() {
+        if (cyclableCameraIds.size < 2) return
+        // Stop current recording gracefully
+        recController?.forceStop()
+        recController?.release(); recController = null
+        ringBuffer?.stop(); ringBuffer = null
+        closeCamera()
+
+        cycleCameraIndex = (cycleCameraIndex + 1) % cyclableCameraIds.size
+        val nextId = cyclableCameraIds[cycleCameraIndex]
+        getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+            .putString(EXTRA_CAMERA_ID, nextId)
+            .apply()
+        Log.i(TAG, "CAM button → camera $nextId (index=$cycleCameraIndex)")
+
+        updateAdjustButtonLabels()
+        tryOpenCamera()
+    }
+
     private fun updateAdjustButtonLabels() {
         rotBtn.text = "↻ ${cfgRotation}°"
         flipBtn.text = if (cfgFlipV) "↕ FLIP ✓" else "↕ FLIP"
+        val camLabel = if (cyclableCameraIds.isNotEmpty()) {
+            val id = cyclableCameraIds.getOrElse(cycleCameraIndex) { "?" }
+            "CAM $id"
+        } else "CAM ?"
+        camBtn.text = camLabel
     }
 }
