@@ -109,7 +109,7 @@ class ViewerActivity : Activity(), MotionDetector.Listener, RecordingController.
     private var cfgCropCy: Float = 0.5f
     private var cfgFlipV: Boolean = false
     private var cfgFlipH: Boolean = false
-    private var cfgThreshold: Int = 18
+    private var cfgThreshold: Int = 35
     private var cameraDevice: CameraDevice? = null
     private var captureSession: CameraCaptureSession? = null
     private var imageReader: ImageReader? = null
@@ -343,9 +343,9 @@ class ViewerActivity : Activity(), MotionDetector.Listener, RecordingController.
             } else cfgFlipH = prefs.getBoolean(EXTRA_FLIP_H, false)
 
             if (i.hasExtra(EXTRA_THRESH)) {
-                cfgThreshold = i.getIntExtra(EXTRA_THRESH, 18)
+                cfgThreshold = i.getIntExtra(EXTRA_THRESH, 35)
                 edit.putInt(EXTRA_THRESH, cfgThreshold)
-            } else cfgThreshold = prefs.getInt(EXTRA_THRESH, 18)
+            } else cfgThreshold = prefs.getInt(EXTRA_THRESH, 35)
 
             if (i.hasExtra(EXTRA_CAMERA_ID)) {
                 edit.putString(EXTRA_CAMERA_ID, i.getStringExtra(EXTRA_CAMERA_ID))
